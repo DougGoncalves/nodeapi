@@ -2,39 +2,32 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const app = express();
 const router = express.Router();
 
+//Conecta ao banco
+mongoose.connect("mongodb+srv://ndstr:maomao12@nodeapi-2tah0.mongodb.net/test?retryWrites=true&w=majority", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log('Conexão com MongoDB feita com sucesso');
+}).catch( (err)=>{
+  console.log('Erro ao se conectar com o Mongo: ' + err);
+});
+
+//Carrega as Models
+const Product = require('./models/Product');
+
+//Carrega as Rotas
+const indexRoute = require('./routes/index-route'); 
+const productRoute = require('./routes/product-route'); 
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const route = router.get('/', (req, res, next) => {
-  res.status(200).send({
-    title: "Node Store API",
-    version: "0.0.2"
-  });
-});
-
-const create = router.post('/', (req, res, next) => {
-  res.status(201).send(req.body);
-});
-
-const put = router.put('/:id', (req, res, next) => {
-  const id = req.params.id;
-  res.status(200).send({ 
-    id: id, 
-    item: req.body
-  });
-});
-
-const del = router.delete('/', (req, res, next) => {
-  res.status(200).send(req.body);
-});
-
-app.use('/', route);
-app.use('/products', create);
-app.use('/products', put);
-app.use('/products', del);
+app.use('/', indexRoute);
+app.use('/products', productRoute);
 
 module.exports = app;
