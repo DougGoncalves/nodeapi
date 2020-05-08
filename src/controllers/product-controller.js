@@ -5,6 +5,9 @@ require('../models/Product');
 const Product = mongoose.model('Product');
 const ValidationContract = require('../validators/fluent-validator');
 const repository = require('../repositories/product-repositorie');
+const azure = require('azure-storage');
+const guid = require('guid');
+var config = require('../config');
 
 exports.get = async (req, res, next) => {
   try {
@@ -63,14 +66,14 @@ exports.post = async(req, res, next) => {
   }
 
   try {
-      // Cria o Blob Service
-      // const blobSvc = azure.createBlobService(config.containerConnectionString);
+      //Cria o Blob Service
+      const blobSvc = azure.createBlobService(config.containerConnectionString);
 
       let filename = guid.raw().toString() + '.jpg';
       let rawdata = req.body.image;
       let matches = rawdata.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
       let type = matches[1];
-      let buffer = new Buffer(matches[2], 'base64');
+      let buffer = new Buffer.alloc(matches[2], 'base64');
 
       // Salva a imagem
       await blobSvc.createBlockBlobFromText('product-images', filename, buffer, {
@@ -88,7 +91,7 @@ exports.post = async(req, res, next) => {
           price: req.body.price,
           active: true,
           tags: req.body.tags,
-          image: 'https://nodestr.blob.core.windows.net/product-images/' + filename
+          image: 'https://nodestrdoug.blob.core.windows.net/product-images/' + filename
       });
       res.status(201).send({
           message: 'Produto cadastrado com sucesso!'
